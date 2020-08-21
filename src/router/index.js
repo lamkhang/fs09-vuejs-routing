@@ -1,23 +1,100 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import Home from "../views/Home.vue";
+import  jwtDecode  from "jwt-decode";
+// import HomeTemplate from "./../views/HomeTemplate";
+// import AdminTemplate from "./../views/AdminTemplate";
 
 Vue.use(VueRouter);
 
 const routes = [
+  //Home template
   {
     path: "/",
-    name: "Home",
-    component: Home
+    component: () => import("./../views/HomeTemplate"),   //lazyload,
+    children: [
+      // Home Page
+      {
+        path: "",
+        component: () => import("./../views/HomeTemplate/HomePage")
+      },
+      // About Page
+      {
+        path: "/about",
+        component: () => import("./../views/HomeTemplate/AboutPage")
+      },
+      {
+        path: "/station",
+        component: () => import("./../views/HomeTemplate/StationsPage")
+      },
+      {
+        path: "station/:id",
+        component: () => import("./../views/HomeTemplate/DetailStationPage")
+      }
+    ]
+  },
+  { path: "/admin", redirect: "/admin/dashboard"},
+  //Admin template
+  {
+    path: "/admin",
+    component: () => import("./../views/AdminTemplate"),
+    beforeEnter(to, from, next) {
+      
+      if(localStorage.getItem("token")){
+        
+        try {
+          const decode = jwtDecode(localStorage.getItem("token"));
+          if(decode.userType === "admin") {
+            next()
+          }
+        } catch (error) {
+          localStorage.removeItem("token");
+          next("/auth");     
+        }        
+      }
+      else{
+        next("/auth")
+      }
+    },
+    children: [
+      {
+        path: "/admin/dashboard",
+        component: () => import("./../views/AdminTemplate/DashboardPage")
+      },
+      {
+        path: "/admin/station",
+        component: () => import("./../views/AdminTemplate/StationPage")
+      },
+      {
+        path: "/admin/create-station",
+        component: () => import("./../views/AdminTemplate/CreateStation")
+      },
+      { path: "/admin/station/:id/edit",
+        component: () => import("./../views/AdminTemplate/EditStation")
+      }
+      
+    ]
+  },
+  { 
+    path: "/auth", 
+    // beforeEnter(to, from, next) {
+    //   if(localStorage.getItem("token")){
+    //     try {
+    //       const decode = jwtDecode(localStorage.getItem("token"));
+    //       if(decode.userType === "admin"){
+    //         next("admin/dashboard")
+    //       }
+    //     } catch (error) {
+    //       next();
+    //     }
+    //   } else{
+    //     next();
+    //   }
+    // },
+    component: () => import ("./../views/AdminTemplate/Auth")
   },
   {
-    path: "/about",
-    name: "About",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/About.vue")
+    path: "*",
+    component: () => import ("./../views/PageNotFound")
   }
 ];
 
