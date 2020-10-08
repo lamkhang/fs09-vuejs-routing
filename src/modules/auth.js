@@ -45,6 +45,7 @@ const actions = {
     commit("storeLoginRequest")
     api.post("users/login", authUser)
     .then(result => {
+      console.log(result);
       const decode = jwtDecode(result.data.token);
       if(decode.userType === "client") {
         return Promise.reject({

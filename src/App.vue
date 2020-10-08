@@ -7,7 +7,7 @@
 <script>
   export default{
     created() {
-      this.$store.dispatch("tryAutoLogin")
+      this.$store.dispatch("tryAutoLogin");
     }
   }
 </script>
